@@ -1,0 +1,172 @@
+/* Variables de diseño — paleta cohesiva */
+:root {
+  --primary: #0d9488;
+  --primary-dark: #0f766e;
+  --primary-light: #ccfbf1;
+  --focus-ring: rgba(13, 148, 136, 0.25);
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --text-muted: #a8a29e;
+  --bg: #fafaf8;
+  --bg-pattern: radial-gradient(circle at 50% 0%, rgba(13, 148, 136, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(13, 148, 136, 0.03) 0%, transparent 40%);
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --shadow-sm: 0 1px 3px rgba(28, 25, 23, 0.06);
+  --shadow-md: 0 4px 20px rgba(28, 25, 23, 0.07);
+  --shadow-lg: 0 12px 40px rgba(28, 25, 23, 0.08);
+  --success-bg: #ecfdf5;
+  --success-text: #065f46;
+  --success-border: #a7f3d0;
+  --error: #b91c1c;
+  --error-bg: #fef2f2;
+  --error-text: #991b1b;
+  --error-border: #fecaca;
+  --info-bg: #f0fdfa;
+  --info-text: #0f766e;
+  --code-bg: #134e4a;
+  --code-text: #f0fdfa;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg);
+  background-image: var(--bg-pattern);
+  background-attachment: fixed;
+}
+
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  min-height: 100vh;
+}
+
+/* Grid de dos columnas para las cards */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Espacio entre el último campo del formulario y el botón */
+.card__body form > .btn {
+  margin-top: 1.5rem;
+}
+
+/* Encabezado principal */
+.app-header {
+  text-align: center;
+  margin-bottom: 2.25rem;
+}
+
+.app-badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  border-radius: var(--radius-full);
+  margin-bottom: 1rem;
+}
+
+.app-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+
+.app-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0.75rem 0 0;
+  font-weight: 500;
+  max-width: 28ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Sección de descarga */
+.download-section {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.download-section .form-group {
+  flex: 1;
+  min-width: 140px;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .app-title {
+    font-size: 1.4rem;
+  }
+
+  .app-subtitle {
+    font-size: 0.9375rem;
+  }
+
+  .download-section {
+    flex-direction: column;
+  }
+
+  .download-section .btn {
+    width: 100%;
+  }
+}
+
+/* Focus visible para accesibilidad */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: none;
+}
+
+input:focus-visible {
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}

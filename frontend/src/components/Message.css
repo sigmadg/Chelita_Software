@@ -1,0 +1,26 @@
+.message {
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  line-height: 1.5;
+}
+
+.message--success {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.message--error {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+}
+
+.message--info {
+  background: var(--info-bg);
+  color: var(--info-text);
+  border: 1px solid var(--primary-light);
+}

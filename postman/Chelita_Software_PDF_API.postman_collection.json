@@ -1,0 +1,111 @@
+{
+  "info": {
+    "name": "Chelita Software - PDF API",
+    "description": "Colección para validar la API de creación y descarga de documentos PDF (FastAPI). Autor: Ana Gabriela Ordoñez Güemes.\n\n**Requisito:** Backend corriendo en `http://localhost:8000` (uvicorn app.main:app --reload --port 8000).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "chelita-pdf-api"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "document_code",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        },
+        "description": "Comprueba que el servidor esté en marcha. Respuesta esperada: `{\"status\": \"ok\"}`."
+      }
+    },
+    {
+      "name": "Crear documento PDF",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const json = pm.response.json();",
+              "    if (json.document_code) {",
+              "        pm.collectionVariables.set('document_code', json.document_code);",
+              "        console.log('document_code guardado: ' + json.document_code);",
+              "    }",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Alexis\",\n  \"apellido\": \"Piña\",\n  \"edad\": \"29\",\n  \"telefono\": \"5581064181\",\n  \"correo\": \"alexis.pina@chelita.com.mx\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/create",
+          "host": ["{{base_url}}"],
+          "path": ["create"]
+        },
+        "description": "Crea un PDF con los datos enviados y devuelve un código único de 10 caracteres. El código se guarda automáticamente en la variable de colección `document_code` para usarlo en \"Obtener documento PDF\"."
+      }
+    },
+    {
+      "name": "Obtener documento PDF",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/document/{{document_code}}",
+          "host": ["{{base_url}}"],
+          "path": ["document", "{{document_code}}"]
+        },
+        "description": "Obtiene el PDF en base64 usando el código devuelto por \"Crear documento PDF\". Usa la variable `document_code` (se rellena al ejecutar antes \"Crear documento PDF\"). Si no la tienes, pon manualmente un código de 10 caracteres en las variables de la colección."
+      }
+    },
+    {
+      "name": "Obtener documento PDF (código inválido - 400)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/document/ABC",
+          "host": ["{{base_url}}"],
+          "path": ["document", "ABC"]
+        },
+        "description": "Prueba de error: código con menos de 10 caracteres. Respuesta esperada: 400."
+      }
+    },
+    {
+      "name": "Obtener documento PDF (no encontrado - 404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/document/XXXXXXXXXX",
+          "host": ["{{base_url}}"],
+          "path": ["document", "XXXXXXXXXX"]
+        },
+        "description": "Prueba de error: código que no existe en el servidor. Respuesta esperada: 404."
+      }
+    }
+  ]
+}

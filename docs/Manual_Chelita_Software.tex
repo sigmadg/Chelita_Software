@@ -1,0 +1,429 @@
+\documentclass{article}
+\usepackage{float}
+\usepackage{arxiv}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{microtype}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+
+\definecolor{codebg}{RGB}{248,249,250}
+\lstset{
+  inputencoding=utf8,
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  framesep=3pt,
+  numbers=left,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  showstringspaces=false,
+}
+
+% Título del resumen y keywords en español
+\renewcommand{\keywordname}{{\bfseries \emph Palabras clave}}
+\renewenvironment{abstract}{%
+  \centerline{\large \bfseries \scshape Resumen}%
+  \begin{quote}}{%
+  \end{quote}}
+
+\title{MANUAL DE CONFIGURACIÓN Y FUNCIONALIDAD \\ RETO CHELITA SOFTWARE -- FULLSTACK TEST}
+
+\author{
+  Ana Gabriela Ordoñez Güemes \\
+  Chelita Software \\
+  Documentación técnica \\
+  \texttt{Reto Fullstack Test}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este documento describe la configuración del proyecto (backend en FastAPI y frontend en React), los requisitos del sistema y la explicación de la funcionalidad de la aplicación: creación de documentos PDF a partir de un formulario y descarga mediante un código único de 10 caracteres.
+\end{abstract}
+
+\keywords{FastAPI \and React \and PDF \and API REST \and Vite \and ReportLab}
+
+\section{INTRODUCCIÓN--}
+\label{sec:intro}
+
+La aplicación permite:
+\begin{itemize}
+  \item \textbf{Crear un documento PDF} rellenando un formulario con nombre, apellido, edad, teléfono y correo. El sistema genera un PDF con una plantilla fija y devuelve un \textbf{código único de 10 caracteres} que identifica ese documento.
+  \item \textbf{Descargar un PDF ya creado} introduciendo el código de 10 caracteres en el frontend; la aplicación devuelve el documento en base64 y se descarga en el navegador.
+\end{itemize}
+
+La arquitectura consta de:
+\begin{itemize}
+  \item \textbf{Backend}: API REST en Python con FastAPI que genera los PDF (ReportLab), almacena los documentos en memoria y expone dos endpoints.
+  \item \textbf{Frontend}: aplicación React (Vite) con formulario para crear documentos y sección para descargar por código.
+\end{itemize}
+
+\section{REQUISITOS DEL SISTEMA--}
+\label{sec:requisitos}
+
+\begin{itemize}
+  \item \textbf{Python} 3.10 o superior (para el backend).
+  \item \textbf{Node.js} 18 o superior y \textbf{npm} (para el frontend con Vite).
+  \item Navegador web moderno (Chrome, Firefox, Edge, Safari).
+\end{itemize}
+
+\section{CONFIGURACIÓN DE LIBRERÍAS (DEPENDENCIAS)--}
+\label{sec:libs}
+
+Las dependencias del backend y del frontend (incluidas las de tests) se instalan por separado. Si la ruta del proyecto contiene espacios (por ejemplo \texttt{Chelita Software}), use comillas al escribir rutas completas o ejecute los comandos desde dentro de la carpeta correspondiente.
+
+\subsection{Librerías del backend--}
+
+El archivo \texttt{backend/requirements.txt} define todas las dependencias Python, tanto de ejecución como de tests:
+
+\begin{itemize}
+  \item \textbf{Ejecución}: \texttt{fastapi}, \texttt{uvicorn[standard]}, \texttt{reportlab}, \texttt{pydantic}.
+  \item \textbf{Tests}: \texttt{pytest}, \texttt{pytest-asyncio}, \texttt{httpx} (cliente para TestClient).
+\end{itemize}
+
+\textbf{Instalación:} desde la carpeta del proyecto, active el entorno virtual del backend e instale:
+
+\begin{lstlisting}[language=bash]
+cd backend
+source .venv/bin/activate    # Linux/macOS
+# En Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+\end{lstlisting}
+
+Si no existe \texttt{.venv}, créelo antes con \texttt{python3 -m venv .venv}. No use una ruta con espacios sin comillas (ej.\ \texttt{"/ruta/Chelita Software/backend/.venv/bin/python"}).
+
+\subsection{Librerías del frontend--}
+
+El archivo \texttt{frontend/package.json} define dependencias de producción y de desarrollo (build y tests):
+
+\begin{itemize}
+  \item \textbf{Producción}: \texttt{react}, \texttt{react-dom}.
+  \item \textbf{Desarrollo/build}: \texttt{vite}, \texttt{@vitejs/plugin-react}.
+  \item \textbf{Tests unitarios}: \texttt{vitest}, \texttt{@testing-library/react}, \texttt{@testing-library/jest-dom}, \texttt{@testing-library/user-event}, \texttt{jsdom}.
+  \item \textbf{Tests E2E}: \texttt{cypress}, \texttt{start-server-and-test}.
+\end{itemize}
+
+\textbf{Instalación:} desde la carpeta del proyecto:
+
+\begin{lstlisting}[language=bash]
+cd frontend
+npm install
+\end{lstlisting}
+
+Con eso quedan instaladas todas las dependencias, incluidas las de tests. No es necesario instalar nada más para ejecutar \texttt{npm run test:run} ni \texttt{npm run e2e}.
+
+\section{CONFIGURACIÓN--}
+\label{sec:configuracion}
+
+\subsection{Configuración del backend (FastAPI)--}
+
+\begin{enumerate}
+  \item Navegar a la carpeta del backend:
+    \begin{lstlisting}[language=bash]
+cd backend
+    \end{lstlisting}
+  \item Crear y activar un entorno virtual:
+    \begin{lstlisting}[language=bash]
+python3 -m venv .venv
+source .venv/bin/activate    # Linux/macOS
+# En Windows: .venv\Scripts\activate
+    \end{lstlisting}
+  \item Instalar dependencias:
+    \begin{lstlisting}[language=bash]
+pip install -r requirements.txt
+    \end{lstlisting}
+  \item Iniciar el servidor:
+    \begin{lstlisting}[language=bash]
+uvicorn app.main:app --reload --port 8000
+    \end{lstlisting}
+\end{enumerate}
+
+El backend quedará disponible en \url{http://localhost:8000}. La documentación interactiva (Swagger) está en \url{http://localhost:8000/docs}.
+
+\textbf{Parámetros opcionales:}
+\begin{itemize}
+  \item \texttt{--port}: puerto (por defecto 8000). Si se cambia, debe coincidir con la configuración del proxy del frontend o con la URL de la API en el frontend si se usa modo standalone.
+  \item \texttt{--reload}: recarga automática al modificar código (solo desarrollo).
+\end{itemize}
+
+\subsection{Configuración del frontend (React + Vite)--}
+
+\begin{enumerate}
+  \item Navegar a la carpeta del frontend:
+    \begin{lstlisting}[language=bash]
+cd frontend
+    \end{lstlisting}
+  \item Instalar dependencias:
+    \begin{lstlisting}[language=bash]
+npm install
+    \end{lstlisting}
+  \item Iniciar el servidor de desarrollo:
+    \begin{lstlisting}[language=bash]
+npm run dev
+    \end{lstlisting}
+\end{enumerate}
+
+La aplicación se abrirá en \url{http://localhost:5173}. El proxy de Vite redirige las peticiones a \texttt{/create} y \texttt{/document} al backend en \texttt{http://localhost:8000}, por lo que \textbf{el backend debe estar en ejecución} para que el frontend funcione correctamente.
+
+\textbf{Archivo de configuración} \texttt{vite.config.js}:
+\begin{lstlisting}
+server: {
+  port: 5173,
+  proxy: {
+    '/create': 'http://localhost:8000',
+    '/document': 'http://localhost:8000',
+  },
+},
+\end{lstlisting}
+
+Si se cambia el puerto del backend, debe actualizarse la URL en \texttt{proxy}.
+
+\subsection{Alternativa sin Node/npm (HTML standalone)--}
+
+Si no se desea usar \texttt{npm install} ni \texttt{npm run dev}, puede utilizarse el archivo \texttt{frontend/index-standalone.html}, que carga React desde CDN y se conecta directamente al backend por URL.
+
+\begin{enumerate}
+  \item Asegurarse de que el backend esté corriendo en \texttt{http://localhost:8000}.
+  \item Abrir en el navegador el archivo \texttt{frontend/index-standalone.html} (doble clic o ``Abrir con'' el navegador), o servir la carpeta \texttt{frontend} con un servidor HTTP y abrir ese archivo (por ejemplo, \texttt{python3 -m http.server 8080} y luego \url{http://localhost:8080/index-standalone.html}).
+\end{enumerate}
+
+En este modo, la URL de la API está fijada en el HTML (\texttt{http://localhost:8000}). El backend debe tener CORS configurado para el origen desde el que se sirve la página (por ejemplo \texttt{null} para \texttt{file://} o el origen del servidor usado).
+
+\section{FUNCIONALIDAD--}
+\label{sec:funcionalidad}
+
+\subsection{Flujo general--}
+
+\begin{enumerate}
+  \item El usuario rellena el formulario ``Crear documento PDF'' con nombre, apellido, edad, teléfono y correo.
+  \item Al enviar el formulario, el frontend llama al endpoint \texttt{POST /create} del backend con esos datos.
+  \item El backend genera un PDF con la plantilla ``Chelita Software - Fullstack Test'' y los datos recibidos, lo guarda en memoria asociado a un código único de 10 caracteres alfanuméricos y devuelve ese código.
+  \item El frontend muestra el código y permite copiarlo al portapapeles.
+  \item Para descargar más tarde, el usuario introduce el código en la sección ``Descargar PDF por código'' y pulsa el botón. El frontend llama a \texttt{GET /document/\{code\}} y, con la respuesta en base64, provoca la descarga del PDF en el navegador.
+\end{enumerate}
+
+\subsection{API del backend--}
+
+\subsubsection{POST /create--}
+
+Crea un nuevo documento PDF a partir de los datos enviados en el cuerpo de la petición.
+
+\textbf{Cuerpo de la petición} (JSON):
+\begin{lstlisting}
+{
+  "nombre": "Alexis",
+  "apellido": "Pina",
+  "edad": "29",
+  "telefono": "5581064181",
+  "correo": "alexis.pina@chelita.com.mx"
+}
+\end{lstlisting}
+
+\textbf{Respuesta exitosa} (200):
+\begin{lstlisting}
+{
+  "success": true,
+  "document_code": "EJ21243DIK"
+}
+\end{lstlisting}
+
+\texttt{document\_code} es una cadena de exactamente 10 caracteres (letras mayúsculas y/o dígitos) que identifica de forma única el documento generado.
+
+\subsubsection{GET /document/\{code\}--}
+
+Devuelve el documento PDF asociado al \texttt{code} en formato base64.
+
+\textbf{Parámetros:}
+\begin{itemize}
+  \item \texttt{code}: cadena de exactamente 10 caracteres (el \texttt{document\_code} devuelto por \texttt{POST /create}).
+\end{itemize}
+
+\textbf{Respuesta exitosa} (200):
+\begin{lstlisting}
+{
+  "success": true,
+  "document_b64": "jwiou2he1287ehiuhwadkjhei27h2i7he1i2e="
+}
+\end{lstlisting}
+
+\texttt{document\_b64} es el contenido del PDF codificado en base64. El frontend decodifica este valor y genera un enlace de descarga (\texttt{data:application/pdf;base64,...}).
+
+\textbf{Errores:}
+\begin{itemize}
+  \item \textbf{400}: el código no tiene 10 caracteres.
+  \item \textbf{404}: no existe ningún documento almacenado con ese código.
+\end{itemize}
+
+\subsection{Contenido del PDF generado--}
+
+El PDF generado tiene la siguiente estructura:
+\begin{itemize}
+  \item Título centrado: ``Chelita Software - Fullstack Test''.
+  \item A continuación, los campos y sus valores:
+  \begin{itemize}
+    \item Nombre
+    \item Apellido
+    \item Edad
+    \item Telefono
+    \item Correo
+  \end{itemize}
+\end{itemize}
+
+Se genera con la librería ReportLab en el backend. Los documentos se almacenan en memoria (diccionario código $\rightarrow$ bytes del PDF); si se reinicia el servidor, se pierden.
+
+\subsection{Funcionalidad del frontend--}
+
+\begin{itemize}
+  \item \textbf{Formulario de creación}: campos obligatorios para nombre, apellido, edad, teléfono y correo; validación básica (required, tipo email). Al enviar, se muestra un indicador de carga y, al terminar, un mensaje de éxito o error y el código del documento.
+  \item \textbf{Código del documento}: se muestra en un bloque destacado con botón ``Copiar'' para copiar el código al portapapeles.
+  \item \textbf{Descarga por código}: campo de texto limitado a 10 caracteres (se fuerza mayúsculas), validación de longitud antes de enviar la petición y mensajes de error o éxito. Al recibir el PDF en base64, se dispara la descarga con nombre \texttt{documento-\{code\}.pdf}.
+  \item \textbf{Accesibilidad}: etiquetas asociadas a los campos, mensajes de error con \texttt{role="alert"}, estados de carga con \texttt{aria-busy} y enfoque visible para teclado.
+\end{itemize}
+
+\section{EJECUCIÓN DE TESTS--}
+\label{sec:tests}
+
+A continuación se indica cómo ejecutar cada suite de tests. Las dependencias necesarias se instalan con los pasos de la sección \ref{sec:libs}.
+
+\subsection{Resumen: comandos para ejecutar los tests--}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Suite} & \textbf{Dónde ejecutar} & \textbf{Comando} \\
+\midrule
+Tests backend (pytest) & \texttt{backend/} con venv activado & \texttt{pytest -v} \\
+Tests frontend (Vitest) & \texttt{frontend/} & \texttt{npm run test:run} \\
+Tests E2E (Cypress) & \texttt{frontend/} & \texttt{npm run e2e} \\
+Test E2E API (script) & \texttt{backend/} con venv, servidor en marcha & \texttt{python ../scripts/e2e\_api\_test.py} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Tests del backend (pytest)--}
+
+Desde la carpeta \texttt{backend}, con el entorno virtual activado (\texttt{source .venv/bin/activate} en Linux/macOS):
+
+\begin{lstlisting}[language=bash]
+pytest -v
+\end{lstlisting}
+
+Se ejecutan tests unitarios del servicio de generación de PDF (longitud y unicidad del código, generación de bytes PDF), de los endpoints (creación, obtención por código, validación 422, errores 400/404 y health) y un test de integración del flujo completo (crear documento y obtenerlo por código).
+
+\subsection{Resultado de la ejecución (backend)--}
+
+A continuación se muestra la salida típica de una ejecución exitosa de \texttt{pytest -v} en el backend:
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+============================= test session starts =====
+platform linux -- Python 3.13.3, pytest-8.3.4
+rootdir: .../backend
+configfile: pytest.ini
+plugins: anyio, asyncio
+collected 11 items
+
+tests/test_api.py::test_create_document_... PASSED
+tests/test_api.py::test_get_document_... PASSED
+tests/test_api.py::test_get_document_invalid_404 PASSED
+tests/test_api.py::test_get_document_bad_400 PASSED
+tests/test_api.py::test_health PASSED
+tests/test_api.py::test_create_validation_422 PASSED
+tests/test_api.py::test_create_empty_field_422 PASSED
+tests/test_integration_flow.py::test_full_flow... PASSED
+tests/test_pdf_service.py::test_generate_code_length PASSED
+tests/test_pdf_service.py::test_generate_code_... PASSED
+tests/test_pdf_service.py::test_build_pdf_... PASSED
+
+=================== 11 passed in 0.06s =================
+\end{lstlisting}
+
+\subsection{Tests del frontend (Vitest)--}
+\label{sec:tests-frontend}
+
+Desde la carpeta \texttt{frontend} (no es necesario tener el servidor \texttt{npm run dev} en marcha):
+
+\begin{lstlisting}[language=bash]
+cd frontend
+npm run test:run
+\end{lstlisting}
+
+Se ejecutan tests con Vitest y React Testing Library: cliente API (\texttt{createDocument}, \texttt{getDocument}, \texttt{downloadPdfFromBase64}) y componente App (formularios, validación, flujo crear documento y descargar por código).
+
+\subsection{Resultado de la ejecución (frontend)--}
+
+Salida típica de \texttt{npm run test:run}:
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+> vitest run
+
+ RUN  v2.1.9
+
+  src/api.test.js (6 tests) 9ms
+  src/App.test.jsx (7 tests) 513ms
+
+ Test Files  2 passed (2)
+      Tests  13 passed (13)
+   Duration  1.51s
+\end{lstlisting}
+
+\subsection{Tests E2E con Cypress--}
+
+Desde la carpeta \texttt{frontend}. El comando \texttt{npm run e2e} arranca el servidor de desarrollo y luego ejecuta Cypress en modo headless; no hace falta tener el backend corriendo (la API se simula):
+
+\begin{lstlisting}[language=bash]
+cd frontend
+npm run e2e
+\end{lstlisting}
+
+Para ejecutar solo los tests E2E contra la API real (backend y frontend en marcha en sus puertos): \texttt{npm run e2e:live}. Para abrir la interfaz gráfica de Cypress: \texttt{npm run cypress:open}.
+
+\subsection{Test E2E de la API (script Python)--}
+
+Con el backend corriendo en \url{http://localhost:8000}, desde la carpeta \texttt{backend} con el entorno virtual activado:
+
+\begin{lstlisting}[language=bash]
+cd backend
+source .venv/bin/activate
+python ../scripts/e2e_api_test.py
+\end{lstlisting}
+
+Salida esperada en caso de éxito:
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+E2E API: comprobando flujo crear -> obtener...
+  Health OK
+  Crear documento OK (codigo: XXXXXXXXXX)
+  Obtener documento OK (PDF valido)
+E2E API: todos los pasos OK.
+\end{lstlisting}
+
+\section{RESUMEN DE ARCHIVOS RELEVANTES--}
+\label{sec:archivos}
+
+\begin{itemize}
+  \item \texttt{backend/requirements.txt}: dependencias Python (FastAPI, ReportLab, etc.).
+  \item \texttt{backend/app/main.py}: aplicación FastAPI y definición de endpoints.
+  \item \texttt{backend/app/pdf\_service.py}: generación del código único y del PDF con ReportLab.
+  \item \texttt{backend/app/store.py}: almacenamiento en memoria (código $\rightarrow$ PDF).
+  \item \texttt{backend/app/models.py}: modelos Pydantic de request/response.
+  \item \texttt{frontend/package.json}: dependencias y scripts npm (React, Vite).
+  \item \texttt{frontend/vite.config.js}: configuración de Vite y proxy al backend.
+  \item \texttt{frontend/src/App.jsx}: componente principal y flujo del formulario y descarga.
+  \item \texttt{frontend/src/api.js}: llamadas a \texttt{/create} y \texttt{/document} y descarga desde base64.
+  \item \texttt{frontend/src/components/}: componentes reutilizables (Card, FormField, Button, Message, CodeDisplay).
+\end{itemize}
+
+\vspace{1em}
+\noindent\textit{Manual elaborado por Ana Gabriela Ordoñez Güemes.}
+
+\end{document}
