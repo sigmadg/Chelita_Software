@@ -36,7 +36,7 @@ export default function App() {
       setDocumentCode(result.document_code)
       setMessage({
         type: 'success',
-        text: 'Documento creado correctamente. Guarda el código para descargarlo más tarde.',
+        text: 'Documento creado correctamente. Guarda el código para descargarlo.',
       })
     } catch (err) {
       setMessage({ type: 'error', text: err.message })
